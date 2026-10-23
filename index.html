@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Helper Meal Prep & WhatsApp Generator</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- SortableJS for Drag-and-Drop Re-ordering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <!-- Inter Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+    }
+    .glass-header {
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+    }
+    /* Tab active indicator accents */
+    .tab-baby-lunch.active {
+      border-color: #f59e0b;
+      color: #d97706;
+      background-color: #fffbeb;
+    }
+    .tab-baby-dinner.active {
+      border-color: #f43f5e;
+      color: #e11d48;
+      background-color: #fff1f2;
+    }
+    .tab-our-dinner.active {
+      border-color: #6366f1;
+      color: #4f46e5;
+      background-color: #eef2ff;
+    }
+    .tab-daily-notes.active {
+      border-color: #10b981;
+      color: #059669;
+      background-color: #ecfdf5;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col pb-12">
+
+  <!-- TOP HEADER -->
+  <header class="glass-header text-white p-4 sm:p-6 shadow-lg sticky top-0 z-30">
+    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center justify-between w-full sm:w-auto">
+        <div class="flex items-center gap-3">
+          <div class="bg-white/20 p-2.5 rounded-2xl backdrop-blur-md border border-white/30">
+            <i class="fa-solid fa-utensils text-2xl text-white"></i>
+          </div>
+          <div>
+            <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight">Helper Meal Prep</h1>
+            <p class="text-xs text-white/80 font-medium">Daily Instructions & WhatsApp Builder</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Nav Buttons -->
+      <div class="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+        <button onclick="window.openModal('pantryModal')" class="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 text-white px-3 py-2 rounded-xl border border-white/20 transition font-medium text-xs sm:text-sm backdrop-blur-md whitespace-nowrap">
+          <i class="fa-solid fa-boxes-packing text-amber-300"></i>
+          <span>Stock Manager</span>
+        </button>
+        <button onclick="window.openModal('historyModal')" class="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 text-white px-3 py-2 rounded-xl border border-white/20 transition font-medium text-xs sm:text-sm backdrop-blur-md whitespace-nowrap">
+          <i class="fa-solid fa-clock-rotate-left text-teal-300"></i>
+          <span>Stock Log</span>
+        </button>
+        <button onclick="window.openModal('presetModal')" class="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 text-white px-3 py-2 rounded-xl border border-white/20 transition font-medium text-xs sm:text-sm backdrop-blur-md whitespace-nowrap">
+          <i class="fa-solid fa-bookmark text-pink-300"></i>
+          <span>Presets</span>
+        </button>
+        <button onclick="window.openModal('syncModal')" class="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-xl border border-white/30 transition font-semibold text-xs sm:text-sm backdrop-blur-md whitespace-nowrap">
+          <i class="fa-solid fa-cloud text-sky-300"></i>
+          <span id="syncStatusLabel">Cloud Sync</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-5xl mx-auto w-full px-4 pt-6 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- LEFT / MAIN BUILDER COLUMN (7 Cols) -->
+    <div class="lg:col-span-7 space-y-5">
+
+      <!-- MEAL SECTION SELECTION TABS -->
+      <div class="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 flex space-x-1.5 overflow-x-auto">
+        <button id="tab-babyLunch" onclick="window.switchMealTab('babyLunch')" class="meal-tab-btn tab-baby-lunch active flex-1 min-w-[100px] py-2.5 px-2 rounded-xl border-b-4 font-bold text-xs sm:text-sm flex flex-col items-center gap-1 transition">
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-baby text-amber-500"></i> Baby Lunch</span>
+          <span id="badge-babyLunch" class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-semibold">0 items</span>
+        </button>
+        <button id="tab-babyDinner" onclick="window.switchMealTab('babyDinner')" class="meal-tab-btn tab-baby-dinner flex-1 min-w-[100px] py-2.5 px-2 rounded-xl border-b-4 border-transparent text-slate-500 font-bold text-xs sm:text-sm flex flex-col items-center gap-1 transition">
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-child text-rose-500"></i> Baby Dinner</span>
+          <span id="badge-babyDinner" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-semibold">0 items</span>
+        </button>
+        <button id="tab-ourDinner" onclick="window.switchMealTab('ourDinner')" class="meal-tab-btn tab-our-dinner flex-1 min-w-[100px] py-2.5 px-2 rounded-xl border-b-4 border-transparent text-slate-500 font-bold text-xs sm:text-sm flex flex-col items-center gap-1 transition">
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-utensils text-indigo-500"></i> Our Dinner</span>
+          <span id="badge-ourDinner" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-semibold">0 items</span>
+        </button>
+        <button id="tab-dailyNotes" onclick="window.switchMealTab('dailyNotes')" class="meal-tab-btn tab-daily-notes flex-1 min-w-[100px] py-2.5 px-2 rounded-xl border-b-4 border-transparent text-slate-500 font-bold text-xs sm:text-sm flex flex-col items-center gap-1 transition">
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-note-sticky text-emerald-500"></i> Daily Notes</span>
+          <span id="badge-dailyNotes" class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-semibold">0 items</span>
+        </button>
+      </div>
+
+      <!-- INGREDIENTS SELECTOR PALETTE -->
+      <div id="ingredientPaletteContainer" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-3">
+        
+        <!-- Header Row with In-Stock Toggle -->
+        <div class="flex items-center justify-between border-b pb-2 border-slate-100">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-layer-group text-indigo-500"></i> Select Ingredients
+          </span>
+          <label class="flex items-center gap-2 cursor-pointer select-none text-xs text-slate-600 font-medium">
+            <span>In-Stock Only</span>
+            <input type="checkbox" id="stockFilterToggle" onchange="window.toggleStockFilter(this.checked)" class="sr-only peer" checked>
+            <div class="w-8 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-indigo-600 relative"></div>
+          </label>
+        </div>
+
+        <!-- Full-Width Category Sub-Tabs Slider -->
+        <div class="w-full overflow-x-auto py-1">
+          <div class="flex gap-2 min-w-max text-xs font-semibold" id="categoryTabs">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Ingredient Chips Container -->
+        <div id="ingredientChips" class="flex flex-wrap gap-2 min-h-[90px] items-center pt-1">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <div class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+          <span class="italic"><i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i> Tap ingredient chip to open prep builder.</span>
+          <button type="button" onclick="window.openCustomPlainModal()" class="text-indigo-600 hover:text-indigo-800 font-bold hover:underline flex items-center gap-1 py-1 px-2 rounded-lg hover:bg-indigo-50 transition">
+            <i class="fa-solid fa-plus-circle"></i> Add Custom Plain Item
+          </button>
+        </div>
+      </div>
+
+      <!-- DAILY NOTES INPUT (Only visible when Daily Notes Tab active) -->
+      <div id="dailyNotesContainer" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-3">
+        <h3 class="font-bold text-sm text-slate-700 flex items-center gap-2">
+          <i class="fa-solid fa-pen-to-square text-emerald-500"></i> Add Daily Notes & Special Instructions
+        </h3>
+        <p class="text-xs text-slate-500">Add housekeeping reminders, grocery shopping lists, or baby care instructions.</p>
+        <div class="flex gap-2">
+          <input type="text" id="noteInput" placeholder="e.g. Please buy fresh milk before 4 PM..." class="flex-1 border border-slate-300 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <button onclick="window.addDailyNote()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition">
+            Add Note
+          </button>
+        </div>
+      </div>
+
+      <!-- ACTIVE ITEMS IN CURRENT SECTION -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 id="currentSectionTitle" class="font-bold text-slate-800 text-sm flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-amber-500"></i> Active Items: Baby's Lunch
+          </h3>
+          <button onclick="window.clearCurrentSection()" class="text-xs text-rose-500 hover:text-rose-700 font-medium flex items-center gap-1 hover:underline">
+            <i class="fa-solid fa-trash-can"></i> Clear Section
+          </button>
+        </div>
+
+        <!-- Active List Container -->
+        <div id="activeItemList" class="space-y-2 min-h-[120px]">
+          <!-- Active Items Rendered Here -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: WHATSAPP OUTPUT & PREVIEWS (5 Cols) -->
+    <div class="lg:col-span-5 space-y-5">
+      
+      <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-5 sticky top-24 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2">
+            <div class="bg-emerald-100 text-emerald-600 p-2 rounded-xl">
+              <i class="fa-brands fa-whatsapp text-xl"></i>
+            </div>
+            <div>
+              <h2 class="font-extrabold text-slate-800 text-base">WhatsApp Output</h2>
+              <p class="text-xs text-slate-500">Live formatted markdown instruction</p>
+            </div>
+          </div>
+          <button onclick="window.resetAllSections()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-2.5 py-1.5 rounded-lg font-medium transition">
+            Reset All
+          </button>
+        </div>
+
+        <!-- WhatsApp Preview Text Area -->
+        <div class="relative">
+          <textarea id="whatsappOutput" readonly class="w-full h-80 font-mono text-xs p-4 bg-slate-900 text-emerald-400 rounded-xl border border-slate-800 focus:outline-none resize-none shadow-inner leading-relaxed"></textarea>
+          <div class="absolute bottom-3 right-3 text-[10px] text-slate-500 bg-slate-800/80 backdrop-blur px-2 py-0.5 rounded">
+            Markdown Format
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="space-y-2">
+          <button onclick="window.copyToClipboard()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl shadow transition flex items-center justify-center gap-2 text-sm">
+            <i class="fa-regular fa-copy"></i> Copy to Clipboard
+          </button>
+          
+          <button onclick="window.sendToWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 text-sm">
+            <i class="fa-brands fa-whatsapp text-lg"></i> Send via WhatsApp
+          </button>
+        </div>
+
+        <div id="copyToast" class="hidden bg-emerald-500 text-white text-xs font-bold py-2 px-3 rounded-lg text-center animate-fade-in">
+          <i class="fa-solid fa-check-circle mr-1"></i> Copied to clipboard successfully!
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- MODAL 1: PREP ACTION & QUANTITY BUILDER -->
+  <div id="prepModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
+      <!-- Modal Header -->
+      <div class="bg-slate-900 text-white p-4 sm:p-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="bg-amber-500/20 text-amber-400 p-2 rounded-xl">
+            <i class="fa-solid fa-kitchen-set text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-base sm:text-lg">Prep & Quantity Builder</h3>
+            <p class="text-xs text-slate-400">Customize instruction for meal</p>
+          </div>
+        </div>
+        <button onclick="window.closeModal('prepModal')" class="text-slate-400 hover:text-white p-2 rounded-full hover:bg-slate-800 transition">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 overflow-y-auto space-y-5">
+
+        <!-- Selected Ingredient Display -->
+        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl" id="modalIngredientEmoji">🥕</span>
+            <div>
+              <span class="text-[10px] uppercase text-slate-400 font-bold tracking-wider">Target Ingredient</span>
+              <h4 class="font-bold text-slate-800 text-base" id="modalIngredientName">Carrot</h4>
+            </div>
+          </div>
+          <span id="modalStockBadge" class="text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-700">In Stock</span>
+        </div>
+
+        <!-- Prep Action Multi-Select Chips (DEFAULT ZERO SELECTED) -->
+        <div class="space-y-2">
+          <div class="flex justify-between items-center">
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">1. Select Prep Actions (Optional)</label>
+            <span class="text-[11px] text-slate-400 font-medium">Zero pre-selected</span>
+          </div>
+          <div class="flex flex-wrap gap-1.5" id="prepActionsContainer">
+            <!-- Generated dynamically -->
+          </div>
+        </div>
+
+        <!-- Quantity Quick Presets (DEFAULT NONE) -->
+        <div class="space-y-2">
+          <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">2. Portion / Quantity</label>
+          <div class="flex flex-wrap gap-1.5" id="quantityPresetContainer">
+            <!-- Generated dynamically -->
+          </div>
+          <div class="mt-2">
+            <input type="text" id="customQuantityInput" oninput="window.handleCustomQuantityInput(this.value)" placeholder="Custom quantity (e.g. 200g, 2 pieces, 1 cup)..." class="w-full text-xs p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+
+        <!-- Natural English Live Preview -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1">
+            <i class="fa-solid fa-wand-magic-sparkles text-indigo-500"></i> Generated Sentence Preview
+          </label>
+          <textarea id="liveSentenceInput" rows="2" class="w-full text-sm font-medium p-3 bg-indigo-50/60 border border-indigo-200 text-indigo-950 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+          <p class="text-[11px] text-slate-400">You can edit the final text above before adding.</p>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+        <button type="button" onclick="window.addPlainModalIngredient()" class="px-3.5 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-700 font-bold text-xs hover:bg-indigo-100 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-font"></i> Add Plain Item
+        </button>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="window.closeModal('prepModal')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 font-semibold text-sm hover:bg-slate-100 transition">
+            Cancel
+          </button>
+          <button type="button" onclick="window.confirmInstructionAdd()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md transition flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i> Add Instruction
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 1B: CUSTOM PLAIN TEXT ITEM MODAL -->
+  <div id="customPlainModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden flex flex-col">
+      <div class="bg-slate-900 text-white p-4 sm:p-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="bg-indigo-500/20 text-indigo-300 p-2 rounded-xl">
+            <i class="fa-solid fa-pen-to-square text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-base sm:text-lg">Add Custom Plain Item</h3>
+            <p class="text-xs text-slate-400">Add free-form instruction or item</p>
+          </div>
+        </div>
+        <button onclick="window.closeModal('customPlainModal')" class="text-slate-400 hover:text-white p-2 rounded-full hover:bg-slate-800 transition">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">Custom Plain Text Instruction</label>
+          <textarea id="customPlainTextInput" rows="3" placeholder="e.g. Defrost 2 chicken breasts in fridge overnight..." class="w-full text-xs p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
+        <button type="button" onclick="window.closeModal('customPlainModal')" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-600 font-semibold text-xs hover:bg-slate-100 transition">
+          Cancel
+        </button>
+        <button type="button" onclick="window.submitCustomPlainItem()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow transition">
+          Add Item
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: PANTRY & STOCK MANAGER (WITH DRAG & DROP RE-ORDERING) -->
+  <div id="pantryModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="bg-slate-900 text-white p-4 sm:p-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="bg-amber-500/20 text-amber-400 p-2 rounded-xl">
+            <i class="fa-solid fa-boxes-packing text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-lg">Pantry Stock Manager</h3>
+            <p class="text-xs text-slate-400" id="stockSummaryText">Manage ingredient availability & quantities</p>
+          </div>
+        </div>
+        <button onclick="window.closeModal('pantryModal')" class="text-slate-400 hover:text-white p-2 rounded-full hover:bg-slate-800 transition">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto space-y-5">
+        <!-- Quick Bulk Actions -->
+        <div class="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-200 text-xs">
+          <span class="font-bold text-slate-700">Bulk Stock Actions:</span>
+          <div class="flex gap-2">
+            <button onclick="window.promptBulkStock(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl font-bold transition">
+              Mark All In-Stock
+            </button>
+            <button onclick="window.promptBulkStock(false)" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-xl font-bold transition">
+              Mark All Out
+            </button>
+            <button onclick="window.promptRemoveOutOfStock()" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-1.5 rounded-xl font-bold transition" title="Remove all out-of-stock ingredients">
+              <i class="fa-solid fa-trash-can mr-1"></i>Remove Out
+            </button>
+          </div>
+        </div>
+
+        <!-- Add Custom Stock Ingredient -->
+        <div class="bg-indigo-50/50 p-3.5 rounded-2xl border border-indigo-100 space-y-2">
+          <span class="text-xs font-bold text-indigo-900 uppercase tracking-wider block">Add New Custom Ingredient</span>
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
+            <input type="text" id="newIngEmoji" placeholder="Emoji (🥕)" class="sm:col-span-2 text-center border border-slate-300 rounded-xl p-2 text-xs">
+            <input type="text" id="newIngName" placeholder="Ingredient Name" class="sm:col-span-5 border border-slate-300 rounded-xl p-2 text-xs">
+            <select id="newIngCat" class="sm:col-span-3 border border-slate-300 rounded-xl p-2 text-xs bg-white">
+              <!-- Dynamically populated from state.categories -->
+            </select>
+            <button onclick="window.addCustomPantryItem()" class="sm:col-span-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs py-2 transition">
+              Add
+            </button>
+          </div>
+        </div>
+
+        <p class="text-[11px] text-slate-400 italic"><i class="fa-solid fa-grip-vertical mr-1"></i> Drag categories or ingredient grip handles to re-order.</p>
+
+        <!-- Category Grid List (Sortable via SortableJS) -->
+        <div id="pantryCategoryList" class="space-y-4">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2B: INGREDIENT STOCK QUANTITY POP-UP PANEL -->
+  <div id="stockQtyModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden flex flex-col animate-fade-in">
+      <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <span class="text-2xl" id="qtyModalEmoji">🥕</span>
+          <div>
+            <h3 class="font-extrabold text-base" id="qtyModalName">Carrot</h3>
+            <p class="text-[11px] text-slate-400">Preview & Update Stock Quantity</p>
+          </div>
+        </div>
+        <button onclick="window.closeModal('stockQtyModal')" class="text-slate-400 hover:text-white p-1.5 rounded-full hover:bg-slate-800 transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <!-- Current Preview Box -->
+        <div class="bg-slate-50 border border-slate-200 p-3 rounded-2xl flex items-center justify-between">
+          <span class="text-xs text-slate-500 font-bold uppercase tracking-wider">Current Stock:</span>
+          <span id="qtyModalCurrentPreview" class="text-xs font-extrabold px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full">
+            Not specified
+          </span>
+        </div>
+
+        <!-- Number Slider (1–10, step 0.5) -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Quantity Number</label>
+            <span id="stockQtySliderValue" class="text-sm font-extrabold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-lg border border-amber-200">0</span>
+          </div>
+          <input type="range" id="stockQtySlider" min="0" max="10" step="0.5" value="0"
+            oninput="window.onStockQtySliderChange(this.value)"
+            class="w-full h-2 bg-slate-200 rounded-full appearance-none cursor-pointer accent-amber-500">
+          <div class="flex justify-between text-[10px] text-slate-400 font-medium px-0.5">
+            <span>0</span><span>2.5</span><span>5</span><span>7.5</span><span>10</span>
+          </div>
+        </div>
+
+        <!-- Unit selection tabs -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Unit</label>
+          <div class="flex flex-wrap gap-1.5" id="stockQtyUnitContainer">
+            <button type="button" data-unit="pc" onclick="window.selectStockUnit('pc')" class="stock-unit-btn px-2.5 py-1 text-xs font-semibold rounded-lg transition border bg-amber-100 text-amber-800 border-amber-300">pc</button>
+            <button type="button" data-unit="pcs" onclick="window.selectStockUnit('pcs')" class="stock-unit-btn px-2.5 py-1 text-xs font-semibold rounded-lg transition border bg-slate-100 text-slate-600 border-slate-200 hover:bg-amber-50">pcs</button>
+            <button type="button" data-unit="pack" onclick="window.selectStockUnit('pack')" class="stock-unit-btn px-2.5 py-1 text-xs font-semibold rounded-lg transition border bg-slate-100 text-slate-600 border-slate-200 hover:bg-amber-50">pack</button>
+            <button type="button" data-unit="box" onclick="window.selectStockUnit('box')" class="stock-unit-btn px-2.5 py-1 text-xs font-semibold rounded-lg transition border bg-slate-100 text-slate-600 border-slate-200 hover:bg-amber-50">box</button>
+            <button type="button" data-unit="bag" onclick="window.selectStockUnit('bag')" class="stock-unit-btn px-2.5 py-1 text-xs font-semibold rounded-lg transition border bg-slate-100 text-slate-600 border-slate-200 hover:bg-amber-50">bag</button>
+            <button type="button" data-unit="bottle" onclick="window.selectStockUnit('bottle')" class="stock-unit-btn px-2.5 py-1 text-xs font-semibold rounded-lg transition border bg-slate-100 text-slate-600 border-slate-200 hover:bg-amber-50">bottle</button>
+            <button type="button" data-unit="can" onclick="window.selectStockUnit('can')" class="stock-unit-btn px-2.5 py-1 text-xs font-semibold rounded-lg transition border bg-slate-100 text-slate-600 border-slate-200 hover:bg-amber-50">can</button>
+            <button type="button" data-unit="bunch" onclick="window.selectStockUnit('bunch')" class="stock-unit-btn px-2.5 py-1 text-xs font-semibold rounded-lg transition border bg-slate-100 text-slate-600 border-slate-200 hover:bg-amber-50">bunch</button>
+            <button type="button" data-unit="kg" onclick="window.selectStockUnit('kg')" class="stock-unit-btn px-2.5 py-1 text-xs font-semibold rounded-lg transition border bg-slate-100 text-slate-600 border-slate-200 hover:bg-amber-50">kg</button>
+            <button type="button" data-unit="g" onclick="window.selectStockUnit('g')" class="stock-unit-btn px-2.5 py-1 text-xs font-semibold rounded-lg transition border bg-slate-100 text-slate-600 border-slate-200 hover:bg-amber-50">g</button>
+            <button type="button" data-unit="cup" onclick="window.selectStockUnit('cup')" class="stock-unit-btn px-2.5 py-1 text-xs font-semibold rounded-lg transition border bg-slate-100 text-slate-600 border-slate-200 hover:bg-amber-50">cup</button>
+          </div>
+        </div>
+
+        <!-- Status shortcuts -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Status Shortcuts</label>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" onclick="window.setStockQtyPreset('Low Stock')" class="px-2.5 py-1 text-xs font-semibold bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-lg transition border border-rose-200">Low Stock</button>
+            <button type="button" onclick="window.setStockQtyPreset('Full Stock')" class="px-2.5 py-1 text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg transition border border-emerald-200">Full Stock</button>
+          </div>
+        </div>
+
+        <!-- Custom Input -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-bold text-slate-600 uppercase tracking-wider">Custom Quantity / Note</label>
+          <input type="text" id="stockQtyInput" oninput="window.onStockQtyCustomInput(this.value)" placeholder="e.g. 300g, 3 cans, almost empty..." class="w-full text-xs p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500">
+        </div>
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2">
+        <button type="button" onclick="window.clearStockQty()" class="px-3 py-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 font-bold text-xs hover:bg-rose-100 transition">
+          Clear Qty
+        </button>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="window.closeModal('stockQtyModal')" class="px-3.5 py-2 rounded-xl border border-slate-300 text-slate-600 font-semibold text-xs hover:bg-slate-100 transition">
+            Cancel
+          </button>
+          <button type="button" onclick="window.saveStockQty()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow transition">
+            Save Quantity
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2C: BULK STOCK DOUBLE CONFIRMATION MODAL -->
+  <div id="bulkConfirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden flex flex-col">
+      <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="bg-amber-500/20 text-amber-400 p-2 rounded-xl">
+            <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-base">Double Confirm Action</h3>
+            <p class="text-[11px] text-slate-400" id="bulkConfirmSubtitle">Bulk Stock Status Update</p>
+          </div>
+        </div>
+        <button onclick="window.closeModal('bulkConfirmModal')" class="text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-800 transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-3">
+        <p class="text-xs text-slate-600 leading-relaxed" id="bulkConfirmMessage">
+          Are you sure you want to change the stock status of all pantry items?
+        </p>
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-end gap-2">
+        <button type="button" onclick="window.closeModal('bulkConfirmModal')" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-600 font-semibold text-xs hover:bg-slate-100 transition">
+          Cancel
+        </button>
+        <button type="button" onclick="window.confirmBulkStockAction()" id="bulkConfirmBtn" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow transition">
+          Confirm Update
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: ACTIVITY STOCK LOG -->
+  <div id="historyModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[85vh]">
+      <div class="bg-slate-900 text-white p-4 sm:p-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="bg-teal-500/20 text-teal-300 p-2 rounded-xl">
+            <i class="fa-solid fa-clock-rotate-left text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-lg">Stock Activity Log</h3>
+            <p class="text-xs text-slate-400">Timestamped history of stock updates</p>
+          </div>
+        </div>
+        <button onclick="window.closeModal('historyModal')" class="text-slate-400 hover:text-white p-2 rounded-full hover:bg-slate-800 transition">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto space-y-3 flex-1" id="logHistoryContainer">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs">
+        <span class="text-slate-400">Audit trail saved locally</span>
+        <button onclick="window.clearLogs()" class="text-rose-500 hover:text-rose-700 font-bold hover:underline">
+          Clear Logs
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: PRESETS MANAGER -->
+  <div id="presetModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden flex flex-col max-h-[85vh]">
+      <div class="bg-slate-900 text-white p-4 sm:p-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="bg-pink-500/20 text-pink-300 p-2 rounded-xl">
+            <i class="fa-solid fa-bookmark text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-lg">Daily Presets</h3>
+            <p class="text-xs text-slate-400">Save and reload full menu setups</p>
+          </div>
+        </div>
+        <button onclick="window.closeModal('presetModal')" class="text-slate-400 hover:text-white p-2 rounded-full hover:bg-slate-800 transition">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <div class="flex gap-2">
+          <input type="text" id="presetNameInput" placeholder="Preset Title (e.g. Monday Standard)..." class="flex-1 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-pink-500">
+          <button onclick="window.saveCurrentPreset()" class="bg-pink-600 hover:bg-pink-700 text-white font-bold px-3 py-2 rounded-xl text-xs transition">
+            Save Current
+          </button>
+        </div>
+
+        <div id="presetList" class="space-y-2 max-h-60 overflow-y-auto">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 5: HOUSEHOLD CLOUD SYNC -->
+  <div id="syncModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden flex flex-col">
+      <div class="bg-slate-900 text-white p-4 sm:p-5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="bg-sky-500/20 text-sky-400 p-2 rounded-xl">
+            <i class="fa-solid fa-cloud text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-lg">Household Cloud Sync</h3>
+            <p class="text-xs text-slate-400">Share live instructions across devices</p>
+          </div>
+        </div>
+        <button onclick="window.closeModal('syncModal')" class="text-slate-400 hover:text-white p-2 rounded-full hover:bg-slate-800 transition">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Enter a shared household sync code (e.g. OURHOME123). Use the same code on every device. Works from GitHub Pages or any static host — no Netlify required. First push creates the cloud slot; later push/pull share meals & stock.
+        </p>
+
+        <div class="space-y-3">
+          <div>
+            <label class="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Household Sync Code</label>
+            <input type="text" id="householdCodeInput" placeholder="Enter code (e.g. OUR-HOME-123)" class="w-full text-sm font-mono p-3 border border-slate-300 rounded-xl mt-1 focus:outline-none focus:ring-2 focus:ring-sky-500 uppercase">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <button onclick="window.pullFromCloud()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 px-3 rounded-xl transition text-xs shadow flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-cloud-arrow-down"></i> Pull from Cloud
+            </button>
+            <button onclick="window.pushToCloud()" class="bg-sky-600 hover:bg-sky-700 text-white font-bold py-2.5 px-3 rounded-xl transition text-xs shadow flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-cloud-arrow-up"></i> Push to Cloud
+            </button>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex flex-col gap-1 text-xs">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500">Sync Status:</span>
+            <span id="syncModalStatus" class="font-bold text-slate-600">Local Only</span>
+          </div>
+          <div id="syncFeedbackMsg" class="text-[11px] text-slate-400 italic text-center"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION CORE SCRIPT -->
+  <script>
+    // --- GLOBAL STATE ---
+    const INITIAL_CATEGORIES = ["Proteins", "Veggies & Carbs", "Aromatics", "Seafood", "Sauces & Spices"];
+    
+    const INITIAL_STOCK = [
+      { id: "1", name: "Chicken Breast", emoji: "🍗", category: "Proteins", inStock: true, stockQty: "500g" },
+      { id: "2", name: "Minced Pork", emoji: "🥩", category: "Proteins", inStock: true, stockQty: "300g" },
+      { id: "3", name: "Beef Slices", emoji: "🥩", category: "Proteins", inStock: true, stockQty: "1 pack" },
+      { id: "4", name: "Tofu", emoji: "🧊", category: "Proteins", inStock: true, stockQty: "2 pcs" },
+      { id: "5", name: "Carrot", emoji: "🥕", category: "Veggies & Carbs", inStock: true, stockQty: "3 pcs" },
+      { id: "6", name: "Broccoli", emoji: "🥦", category: "Veggies & Carbs", inStock: true, stockQty: "1 pc" },
+      { id: "7", name: "Spinach", emoji: "🥬", category: "Veggies & Carbs", inStock: true, stockQty: "1 pack" },
+      { id: "8", name: "Potato", emoji: "🥔", category: "Veggies & Carbs", inStock: true, stockQty: "4 pcs" },
+      { id: "9", name: "Pumpkin", emoji: "🎃", category: "Veggies & Carbs", inStock: true, stockQty: "1/2 pc" },
+      { id: "10", name: "Garlic", emoji: "🧄", category: "Aromatics", inStock: true, stockQty: "Full Stock" },
+      { id: "11", name: "Ginger", emoji: "🫚", category: "Aromatics", inStock: true, stockQty: "Low Stock" },
+      { id: "12", name: "Spring Onion", emoji: "🧅", category: "Aromatics", inStock: true, stockQty: "1 bunch" },
+      { id: "13", name: "Salmon Fillet", emoji: "🐟", category: "Seafood", inStock: true, stockQty: "2 pcs" },
+      { id: "14", name: "Shrimp", emoji: "🦐", category: "Seafood", inStock: true, stockQty: "250g" },
+      { id: "15", name: "Soy Sauce", emoji: "🫙", category: "Sauces & Spices", inStock: true, stockQty: "1 bottle" },
+      { id: "16", name: "Oyster Sauce", emoji: "🫙", category: "Sauces & Spices", inStock: true, stockQty: "1 bottle" }
+    ];
+
+    const PREP_ACTIONS = [
+      "wash", "peel", "slice", "dice", "mince", "chop", "marinate", "boil", "steam", "stir-fry", "puree"
+    ];
+
+    const QUANTITY_PRESETS = [
+      "None", "1/2 portion", "1 portion", "100g", "200g", "1 cup", "1 piece", "2 pieces"
+    ];
+
+    let state = {
+      activeSection: 'babyLunch',
+      categories: JSON.parse(localStorage.getItem('helper_categories')) || INITIAL_CATEGORIES,
+      activeCategory: 'Proteins',
+      showOnlyInStock: true,
+      stockList: JSON.parse(localStorage.getItem('helper_stock')) || INITIAL_STOCK,
+      meals: JSON.parse(localStorage.getItem('helper_meals')) || {
+        babyLunch: [],
+        babyDinner: [],
+        ourDinner: [],
+        dailyNotes: []
+      },
+      activityLogs: JSON.parse(localStorage.getItem('helper_logs')) || [],
+      savedPresets: JSON.parse(localStorage.getItem('helper_presets')) || [],
+      householdCode: localStorage.getItem('helper_sync_code') || ''
+    };
+
+    if (!state.categories.includes(state.activeCategory) && state.categories.length > 0) {
+      state.activeCategory = state.categories[0];
+    }
+
+    let currentModalIngredient = null;
+    let currentQtyModalIngredient = null;
+    let pendingBulkStatus = null;
+    let pendingConfirmAction = null;
+    let selectedPrepActions = [];
+    let selectedQuantity = 'None';
+    let catSortableInstance = null;
+
+    // --- HELPER LOGGING & STORAGE ---
+    function saveState() {
+      localStorage.setItem('helper_categories', JSON.stringify(state.categories));
+      localStorage.setItem('helper_stock', JSON.stringify(state.stockList));
+      localStorage.setItem('helper_meals', JSON.stringify(state.meals));
+      localStorage.setItem('helper_logs', JSON.stringify(state.activityLogs));
+      localStorage.setItem('helper_presets', JSON.stringify(state.savedPresets));
+      localStorage.setItem('helper_sync_code', state.householdCode);
+    }
+
+    function addLog(action, details) {
+      const now = new Date();
+      const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' ' + now.toLocaleDateString();
+      state.activityLogs.unshift({ action, details, timestamp });
+      if (state.activityLogs.length > 50) state.activityLogs.pop();
+    }
+
+    // --- CLOUD SYNC (browser-only free backend — works on GitHub Pages) ---
+    // Uses ExtendsClass JSON Storage + a shared registry bin so household codes
+    // map to storage bins without any Netlify/server code.
+    const CLOUD_API = "https://extendsclass.com/api/json-storage/bin";
+    const REGISTRY_BIN_ID = "fafdaba"; // public registry: household code → bin id
+
+    function showSyncStatus(msg, type = "slate") {
+      const statusEl = document.getElementById('syncModalStatus');
+      const feedbackEl = document.getElementById('syncFeedbackMsg');
+      if (statusEl) {
+        statusEl.textContent = msg;
+        statusEl.className = `font-bold ${type === 'emerald' ? 'text-emerald-600' : type === 'rose' ? 'text-rose-600' : 'text-slate-600'}`;
+      }
+      if (feedbackEl) {
+        feedbackEl.textContent = msg;
+      }
+    }
+
+    function normalizeHouseholdKey(code) {
+      return String(code || "").replace(/[^A-Za-z0-9]/g, "").toLowerCase();
+    }
+
+    async function readRegistry() {
+      const res = await fetch(`${CLOUD_API}/${REGISTRY_BIN_ID}`, { cache: "no-store" });
+      if (!res.ok) throw new Error(`Registry read failed (${res.status})`);
+      const data = await res.json();
+      if (!data || typeof data !== "object") return { _type: "mealprep-registry", map: {} };
+      if (!data.map || typeof data.map !== "object") data.map = {};
+      return data;
+    }
+
+    async function writeRegistry(registry) {
+      const res = await fetch(`${CLOUD_API}/${REGISTRY_BIN_ID}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(registry)
+      });
+      if (!res.ok) throw new Error(`Registry write failed (${res.status})`);
+      return res.json();
+    }
+
+    async function createDataBin(payload) {
+      const res = await fetch(CLOUD_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error(`Create bin failed (${res.status})`);
+      const data = await res.json();
+      if (!data || !data.id) throw new Error("Create bin returned no id");
+      return data.id;
+    }
+
+    async function putDataBin(binId, payload) {
+      const res = await fetch(`${CLOUD_API}/${binId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error(`Save bin failed (${res.status})`);
+      return res.json();
+    }
+
+    async function getDataBin(binId) {
+      const res = await fetch(`${CLOUD_API}/${binId}`, { cache: "no-store" });
+      if (!res.ok) throw new Error(`Load bin failed (${res.status})`);
+      return res.json();
+    }
+
+    window.pushToCloud = async function() {
+      const inputCode = document.getElementById('householdCodeInput').value.trim().toUpperCase();
+      if (!inputCode) {
+        showSyncStatus("Please enter a household code first", "rose");
+        return;
+      }
+      const key = normalizeHouseholdKey(inputCode);
+      if (!key || key.length < 3) {
+        showSyncStatus("Code needs at least 3 letters/numbers", "rose");
+        return;
+      }
+      state.householdCode = inputCode;
+      saveState();
+
+      showSyncStatus("Pushing to cloud...", "slate");
+      try {
+        const payload = {
+          categories: state.categories,
+          stockList: state.stockList,
+          meals: state.meals,
+          activityLogs: state.activityLogs,
+          householdCode: inputCode,
+          updatedAt: new Date().toISOString()
+        };
+
+        const registry = await readRegistry();
+        let binId = registry.map[key];
+
+        if (binId) {
+          await putDataBin(binId, payload);
+        } else {
+          binId = await createDataBin(payload);
+          registry.map[key] = binId;
+          registry._type = "mealprep-registry";
+          registry.updatedAt = new Date().toISOString();
+          await writeRegistry(registry);
+        }
+
+        // Cache bin id locally for faster next push
+        try { localStorage.setItem("helper_sync_bin_" + key, binId); } catch (_) {}
+
+        showSyncStatus("Successfully pushed to cloud! 🎉", "emerald");
+        const label = document.getElementById('syncStatusLabel');
+        if (label) label.textContent = `Sync: ${inputCode}`;
+        addLog("Cloud Sync", `Pushed state to cloud code [${inputCode}]`);
+      } catch (err) {
+        console.error("Cloud push error:", err);
+        showSyncStatus("Push failed: " + (err.message || "network error"), "rose");
+      }
+    };
+
+    window.pullFromCloud = async function() {
+      const inputCode = document.getElementById('householdCodeInput').value.trim().toUpperCase();
+      if (!inputCode) {
+        showSyncStatus("Please enter a household code first", "rose");
+        return;
+      }
+      const key = normalizeHouseholdKey(inputCode);
+      if (!key || key.length < 3) {
+        showSyncStatus("Code needs at least 3 letters/numbers", "rose");
+        return;
+      }
+      state.householdCode = inputCode;
+      saveState();
+
+      showSyncStatus("Pulling from cloud...", "slate");
+      try {
+        let binId = null;
+        try { binId = localStorage.getItem("helper_sync_bin_" + key); } catch (_) {}
+
+        if (!binId) {
+          const registry = await readRegistry();
+          binId = registry.map && registry.map[key];
+        }
+
+        if (!binId) {
+          showSyncStatus("No saved data for this code — push first", "rose");
+          return;
+        }
+
+        const data = await getDataBin(binId);
+        if (data && data.meals) {
+          state.categories = data.categories || state.categories;
+          state.stockList = data.stockList || state.stockList;
+          state.meals = data.meals || state.meals;
+          state.activityLogs = data.activityLogs || state.activityLogs;
+
+          if (!state.categories.includes(state.activeCategory) && state.categories.length > 0) {
+            state.activeCategory = state.categories[0];
+          }
+
+          try { localStorage.setItem("helper_sync_bin_" + key, binId); } catch (_) {}
+
+          window.renderAll();
+          showSyncStatus("Successfully pulled from cloud! ☁️", "emerald");
+          const label = document.getElementById('syncStatusLabel');
+          if (label) label.textContent = `Sync: ${inputCode}`;
+          addLog("Cloud Sync", `Pulled state from cloud code [${inputCode}]`);
+        } else {
+          showSyncStatus("Cloud data empty or invalid for this code", "rose");
+        }
+      } catch (err) {
+        console.error("Cloud pull error:", err);
+        showSyncStatus("Pull failed: " + (err.message || "network error"), "rose");
+      }
+    };
+
+    // --- RENDER FUNCTIONS ---
+    window.renderAll = function() {
+      renderCategoryTabs();
+      renderIngredientChips();
+      renderActiveItems();
+      renderBadges();
+      renderWhatsAppPreview();
+      saveState();
+    };
+
+    function renderCategoryTabs() {
+      const container = document.getElementById('categoryTabs');
+      container.innerHTML = state.categories.map(cat => `
+        <button onclick="window.switchCategory('${cat}')" class="px-3.5 py-1.5 rounded-xl border transition ${state.activeCategory === cat ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'}">
+          ${cat}
+        </button>
+      `).join('');
+    }
+
+    function renderIngredientChips() {
+      const container = document.getElementById('ingredientChips');
+      const filtered = state.stockList.filter(item => {
+        const matchesCat = item.category === state.activeCategory;
+        const matchesStock = state.showOnlyInStock ? item.inStock : true;
+        return matchesCat && matchesStock;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<span class="text-xs text-slate-400 italic py-2">No ingredients in this category.</span>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => `
+        <button onclick="window.openPrepModal('${item.id}')" class="flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold shadow-sm transition transform active:scale-95 ${item.inStock ? 'bg-slate-50 border-slate-200 text-slate-800 hover:border-indigo-400 hover:bg-indigo-50/50' : 'bg-slate-100 border-slate-200 text-slate-400 line-through'}">
+          <span>${item.emoji}</span>
+          <span>${item.name}</span>
+          ${item.stockQty ? `<span class="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-md font-bold">${item.stockQty}</span>` : ''}
+          ${!item.inStock ? '<span class="text-[9px] bg-rose-100 text-rose-700 px-1 rounded ml-1">Out</span>' : ''}
+        </button>
+      `).join('');
+    }
+
+    function renderActiveItems() {
+      const container = document.getElementById('activeItemList');
+      const items = state.meals[state.activeSection] || [];
+
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div class="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center text-slate-400">
+            <i class="fa-regular fa-folder-open text-2xl mb-1"></i>
+            <p class="text-xs">No instructions added to this section yet.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = items.map((item, index) => `
+        <div class="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl hover:border-slate-300 transition">
+          <div class="flex items-center gap-2.5 flex-1 pr-2">
+            <span class="text-base">${item.emoji}</span>
+            <span class="text-xs font-semibold text-slate-800 leading-snug">${item.text}</span>
+          </div>
+
+          <!-- Interactive Arrow Re-ordering Buttons & Remove -->
+          <div class="flex items-center gap-1">
+            <button onclick="window.reorderActiveItem(${index}, -1)" class="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-800 ${index === 0 ? 'opacity-30 cursor-not-allowed' : ''}" ${index === 0 ? 'disabled' : ''}>
+              <i class="fa-solid fa-arrow-up text-xs"></i>
+            </button>
+            <button onclick="window.reorderActiveItem(${index}, 1)" class="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 hover:text-slate-800 ${index === items.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}" ${index === items.length - 1 ? 'disabled' : ''}>
+              <i class="fa-solid fa-arrow-down text-xs"></i>
+            </button>
+            <button onclick="window.removeActiveItem(${index})" class="p-1.5 rounded-lg hover:bg-rose-100 text-slate-400 hover:text-rose-600 transition">
+              <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderBadges() {
+      ['babyLunch', 'babyDinner', 'ourDinner', 'dailyNotes'].forEach(key => {
+        const badge = document.getElementById(`badge-${key}`);
+        if (badge) {
+          const count = state.meals[key]?.length || 0;
+          badge.textContent = `${count} item${count === 1 ? '' : 's'}`;
+        }
+      });
+    }
+
+    function renderWhatsAppPreview() {
+      const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      let output = `*📅 DAILY MEAL & PREP INSTRUCTIONS* (${todayStr})\n\n`;
+
+      let hasAny = false;
+      const sectionTitles = {
+        babyLunch: "👶 *BABY'S LUNCH*",
+        babyDinner: "👶 *BABY'S DINNER*",
+        ourDinner: "🍽️ *OUR DINNER*",
+        dailyNotes: "📝 *DAILY NOTES & SPECIAL INSTRUCTIONS*"
+      };
+
+      for (const [secKey, title] of Object.entries(sectionTitles)) {
+        const list = state.meals[secKey];
+        if (list && list.length > 0) {
+          hasAny = true;
+          output += `${title}\n`;
+          list.forEach(item => {
+            output += `- ${item.text}\n`;
+          });
+          output += `\n`;
+        }
+      }
+
+      if (!hasAny) {
+        output += `_No instructions added yet. Tap ingredients above to build the daily menu._`;
+      } else {
+        output += `Thank you! Please let me know if you have any questions. 👍`;
+      }
+
+      document.getElementById('whatsappOutput').value = output.trim();
+    }
+
+    // --- PREP BUILDER MODAL LOGIC ---
+    window.openPrepModal = function(ingredientId) {
+      currentModalIngredient = state.stockList.find(i => i.id === ingredientId);
+      if (!currentModalIngredient) return;
+
+      selectedPrepActions = [];
+      selectedQuantity = 'None';
+      document.getElementById('customQuantityInput').value = '';
+
+      document.getElementById('modalIngredientEmoji').textContent = currentModalIngredient.emoji;
+      document.getElementById('modalIngredientName').textContent = currentModalIngredient.name;
+
+      const badge = document.getElementById('modalStockBadge');
+      if (currentModalIngredient.inStock) {
+        badge.textContent = currentModalIngredient.stockQty ? `In Stock (${currentModalIngredient.stockQty})` : "In Stock";
+        badge.className = "text-xs px-2.5 py-1 rounded-full font-bold bg-emerald-100 text-emerald-700";
+      } else {
+        badge.textContent = "Out of Stock";
+        badge.className = "text-xs px-2.5 py-1 rounded-full font-bold bg-rose-100 text-rose-700";
+      }
+
+      renderPrepActionChips();
+      renderQuantityPresets();
+      updateLiveSentence();
+
+      window.openModal('prepModal');
+    };
+
+    function renderPrepActionChips() {
+      const container = document.getElementById('prepActionsContainer');
+      container.innerHTML = PREP_ACTIONS.map(action => {
+        const isSelected = selectedPrepActions.includes(action);
+        return `
+          <button type="button" onclick="window.togglePrepAction('${action}')" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition ${isSelected ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'}">
+            ${action}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderQuantityPresets() {
+      const container = document.getElementById('quantityPresetContainer');
+      container.innerHTML = QUANTITY_PRESETS.map(qty => {
+        const isSelected = selectedQuantity === qty;
+        return `
+          <button type="button" onclick="window.selectQuantity('${qty}')" class="px-2.5 py-1 rounded-lg text-xs font-medium border transition ${isSelected ? 'bg-slate-800 text-white border-slate-800' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}">
+            ${qty}
+          </button>
+        `;
+      }).join('');
+    }
+
+    window.togglePrepAction = function(action) {
+      if (selectedPrepActions.includes(action)) {
+        selectedPrepActions = selectedPrepActions.filter(a => a !== action);
+      } else {
+        selectedPrepActions.push(action);
+      }
+      renderPrepActionChips();
+      updateLiveSentence();
+    };
+
+    window.selectQuantity = function(qty) {
+      selectedQuantity = qty;
+      document.getElementById('customQuantityInput').value = '';
+      renderQuantityPresets();
+      updateLiveSentence();
+    };
+
+    window.handleCustomQuantityInput = function(val) {
+      if (val.trim()) {
+        selectedQuantity = 'None';
+        renderQuantityPresets();
+      }
+      updateLiveSentence();
+    };
+
+    function updateLiveSentence() {
+      if (!currentModalIngredient) return;
+      const name = currentModalIngredient.name;
+      const customQty = document.getElementById('customQuantityInput').value.trim();
+      const qtyToUse = customQty ? customQty : (selectedQuantity === 'None' ? '' : selectedQuantity);
+
+      let text = '';
+      if (selectedPrepActions.length > 0) {
+        const actionsStr = selectedPrepActions.join(', ');
+        const capitalized = actionsStr.charAt(0).toUpperCase() + actionsStr.slice(1);
+        text = `${capitalized} ${qtyToUse ? qtyToUse + ' ' : ''}${name.toLowerCase()}`;
+      } else {
+        text = `${qtyToUse ? qtyToUse + ' ' : ''}${name}`;
+      }
+
+      document.getElementById('liveSentenceInput').value = text;
+    }
+
+    window.addPlainModalIngredient = function() {
+      if (!currentModalIngredient) return;
+      const customQty = document.getElementById('customQuantityInput').value.trim();
+      const qtyToUse = customQty ? customQty : (selectedQuantity === 'None' ? '' : selectedQuantity);
+
+      const plainText = `${qtyToUse ? qtyToUse + ' ' : ''}${currentModalIngredient.name}`;
+      
+      state.meals[state.activeSection].push({
+        id: Date.now().toString(),
+        text: plainText,
+        emoji: currentModalIngredient.emoji
+      });
+
+      window.closeModal('prepModal');
+      window.renderAll();
+    };
+
+    window.confirmInstructionAdd = function() {
+      if (!currentModalIngredient) return;
+      const finalText = document.getElementById('liveSentenceInput').value.trim();
+      if (finalText) {
+        state.meals[state.activeSection].push({
+          id: Date.now().toString(),
+          text: finalText,
+          emoji: currentModalIngredient.emoji
+        });
+      }
+      window.closeModal('prepModal');
+      window.renderAll();
+    };
+
+    window.openCustomPlainModal = function() {
+      document.getElementById('customPlainTextInput').value = '';
+      window.openModal('customPlainModal');
+    };
+
+    window.submitCustomPlainItem = function() {
+      const text = document.getElementById('customPlainTextInput').value.trim();
+      if (text) {
+        state.meals[state.activeSection].push({
+          id: Date.now().toString(),
+          text: text,
+          emoji: '📌'
+        });
+        window.closeModal('customPlainModal');
+        window.renderAll();
+      }
+    };
+
+    window.switchMealTab = function(sec) {
+      state.activeSection = sec;
+      ['babyLunch', 'babyDinner', 'ourDinner', 'dailyNotes'].forEach(s => {
+        const btn = document.getElementById(`tab-${s}`);
+        if (btn) btn.classList.remove('active');
+      });
+      document.getElementById(`tab-${sec}`)?.classList.add('active');
+
+      const palette = document.getElementById('ingredientPaletteContainer');
+      const notes = document.getElementById('dailyNotesContainer');
+      const title = document.getElementById('currentSectionTitle');
+
+      if (sec === 'dailyNotes') {
+        palette.classList.add('hidden');
+        notes.classList.remove('hidden');
+        title.innerHTML = `<i class="fa-solid fa-note-sticky text-emerald-500"></i> Active Items: Daily Notes`;
+      } else {
+        palette.classList.remove('hidden');
+        notes.classList.add('hidden');
+        
+        let titleText = "Baby's Lunch";
+        if (sec === 'babyDinner') titleText = "Baby's Dinner";
+        if (sec === 'ourDinner') titleText = "Our Dinner";
+        title.innerHTML = `<i class="fa-solid fa-list-check text-indigo-500"></i> Active Items: ${titleText}`;
+      }
+
+      renderActiveItems();
+    };
+
+    window.switchCategory = function(cat) {
+      state.activeCategory = cat;
+      renderCategoryTabs();
+      renderIngredientChips();
+    };
+
+    window.toggleStockFilter = function(checked) {
+      state.showOnlyInStock = checked;
+      renderIngredientChips();
+    };
+
+    window.addDailyNote = function() {
+      const input = document.getElementById('noteInput');
+      if (input && input.value.trim()) {
+        state.meals.dailyNotes.push({
+          id: Date.now().toString(),
+          text: input.value.trim(),
+          emoji: '📝'
+        });
+        input.value = '';
+        window.renderAll();
+      }
+    };
+
+    window.reorderActiveItem = function(index, delta) {
+      const list = state.meals[state.activeSection];
+      const targetIdx = index + delta;
+      if (targetIdx >= 0 && targetIdx < list.length) {
+        const temp = list[index];
+        list[index] = list[targetIdx];
+        list[targetIdx] = temp;
+        window.renderAll();
+      }
+    };
+
+    window.removeActiveItem = function(index) {
+      state.meals[state.activeSection].splice(index, 1);
+      window.renderAll();
+    };
+
+    window.clearCurrentSection = function() {
+      state.meals[state.activeSection] = [];
+      window.renderAll();
+    };
+
+    window.resetAllSections = function() {
+      if (confirm("Reset all instructions for today?")) {
+        state.meals = { babyLunch: [], babyDinner: [], ourDinner: [], dailyNotes: [] };
+        window.renderAll();
+      }
+    };
+
+    // --- PANTRY MANAGER & SORTABLEJS DRAG-AND-DROP ---
+    function renderPantryManager() {
+      const container = document.getElementById('pantryCategoryList');
+      const inStockCount = state.stockList.filter(i => i.inStock).length;
+      document.getElementById('stockSummaryText').textContent = `${inStockCount} / ${state.stockList.length} Items In-Stock`;
+
+      const catSelect = document.getElementById('newIngCat');
+      if (catSelect) {
+        catSelect.innerHTML = state.categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+      }
+
+      container.innerHTML = state.categories.map((cat) => {
+        const catItems = state.stockList.filter(i => i.category === cat);
+
+        return `
+          <div class="space-y-2 bg-slate-50/50 p-3 rounded-2xl border border-slate-200/80 pantry-category-item" data-category-name="${cat}">
+            <!-- Category Header with Grip Handle -->
+            <div class="flex items-center justify-between pb-1 border-b border-slate-200">
+              <span class="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-grip-vertical cat-drag-handle text-slate-400 cursor-grab active:cursor-grabbing hover:text-slate-600 p-1"></i>
+                <i class="fa-solid fa-folder text-indigo-500"></i> ${cat}
+              </span>
+              <span class="text-[10px] text-slate-400 font-medium">${catItems.length} items</span>
+            </div>
+
+            <!-- Ingredient Items Grid with Grip Handles (Sortable) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 ingredient-sortable-list" data-category-name="${cat}">
+              ${catItems.length === 0 ? '<span class="text-[11px] text-slate-400 italic col-span-2 py-1">No ingredients in category.</span>' : ''}
+              ${catItems.map((item) => `
+                <div class="flex items-center justify-between p-2 rounded-xl border text-xs transition bg-white ${item.inStock ? 'border-emerald-200 text-emerald-950' : 'border-slate-200 text-slate-400 opacity-80'} pantry-ing-item" data-ingredient-id="${item.id}">
+                  
+                  <!-- Grip Handle & Name -->
+                  <div class="flex items-center gap-1.5 flex-1 min-w-0">
+                    <i class="fa-solid fa-grip-vertical ing-drag-handle text-slate-300 cursor-grab active:cursor-grabbing hover:text-slate-500 p-1"></i>
+                    <span class="text-base">${item.emoji}</span>
+                    <span onclick="window.toggleSingleStock('${item.id}')" class="font-bold truncate cursor-pointer select-none ${!item.inStock ? 'line-through text-slate-400' : ''}">${item.name}</span>
+                  </div>
+
+                  <!-- Actions: Quantity & Toggle -->
+                  <div class="flex items-center gap-1 ml-1">
+                    <button type="button" onclick="window.openStockQtyModal('${item.id}')" class="px-2 py-0.5 rounded-lg border text-[10px] font-extrabold transition ${item.stockQty ? 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200' : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'}">
+                      ${item.stockQty || '+ Qty'}
+                    </button>
+
+                    <button type="button" onclick="window.toggleSingleStock('${item.id}')" class="p-1 rounded-lg hover:bg-black/5" title="Toggle Stock Availability">
+                      <i class="fa-solid ${item.inStock ? 'fa-check text-emerald-600 font-bold' : 'fa-xmark text-slate-400'}"></i>
+                    </button>
+
+                    <button type="button" onclick="window.promptRemoveIngredient('${item.id}')" class="p-1 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50" title="Remove Ingredient">
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  </div>
+
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Initialize SortableJS after rendering
+      initSortables();
+    }
+
+    function initSortables() {
+      if (!window.Sortable) return;
+
+      // Category Sortable
+      const catListEl = document.getElementById('pantryCategoryList');
+      if (catListEl) {
+        if (catSortableInstance) catSortableInstance.destroy();
+        catSortableInstance = Sortable.create(catListEl, {
+          handle: '.cat-drag-handle',
+          animation: 150,
+          onEnd: function() {
+            const newOrder = [];
+            catListEl.querySelectorAll('[data-category-name]').forEach(el => {
+              newOrder.push(el.getAttribute('data-category-name'));
+            });
+            state.categories = newOrder;
+            addLog("Category Reorder", "Reordered categories via drag-and-drop");
+            saveState();
+            window.renderAll();
+          }
+        });
+      }
+
+      // Ingredient Sortables per Category
+      document.querySelectorAll('.ingredient-sortable-list').forEach(ingListEl => {
+        const catName = ingListEl.getAttribute('data-category-name');
+        Sortable.create(ingListEl, {
+          handle: '.ing-drag-handle',
+          animation: 150,
+          onEnd: function() {
+            const newIngIds = [];
+            ingListEl.querySelectorAll('[data-ingredient-id]').forEach(el => {
+              newIngIds.push(el.getAttribute('data-ingredient-id'));
+            });
+            
+            const otherItems = state.stockList.filter(i => i.category !== catName);
+            const catItemsMap = new Map(state.stockList.filter(i => i.category === catName).map(i => [i.id, i]));
+            const reorderedCatItems = newIngIds.map(id => catItemsMap.get(id)).filter(Boolean);
+            
+            state.stockList = [...otherItems, ...reorderedCatItems];
+            addLog("Ingredient Reorder", `Reordered ingredients in ${catName} via drag-and-drop`);
+            saveState();
+            window.renderAll();
+          }
+        });
+      });
+    }
+
+    window.toggleSingleStock = function(id) {
+      const item = state.stockList.find(i => i.id === id);
+      if (item) {
+        item.inStock = !item.inStock;
+        addLog("Stock Toggle", `Set ${item.name} to ${item.inStock ? 'In-Stock' : 'Out-of-Stock'}`);
+        renderPantryManager();
+        window.renderAll();
+      }
+    };
+
+    let selectedStockUnit = 'pc';
+    let stockQtySliderNum = 0;
+
+    function composeStockQtyString() {
+      const num = stockQtySliderNum;
+      const unit = selectedStockUnit || 'pc';
+      return `${num} ${unit}`;
+    }
+
+    function updateStockQtyPreviewFromControls() {
+      const composed = composeStockQtyString();
+      document.getElementById('stockQtyInput').value = composed;
+      document.getElementById('qtyModalCurrentPreview').textContent = composed;
+      document.getElementById('stockQtySliderValue').textContent = String(stockQtySliderNum);
+    }
+
+    function highlightStockUnit(unit) {
+      selectedStockUnit = unit;
+      document.querySelectorAll('.stock-unit-btn').forEach(btn => {
+        const isActive = btn.getAttribute('data-unit') === unit;
+        btn.className = isActive
+          ? 'stock-unit-btn px-2.5 py-1 text-xs font-semibold rounded-lg transition border bg-amber-100 text-amber-800 border-amber-300'
+          : 'stock-unit-btn px-2.5 py-1 text-xs font-semibold rounded-lg transition border bg-slate-100 text-slate-600 border-slate-200 hover:bg-amber-50';
+      });
+    }
+
+    window.onStockQtySliderChange = function(val) {
+      const n = parseFloat(val);
+      stockQtySliderNum = Number.isFinite(n) ? n : 0;
+      updateStockQtyPreviewFromControls();
+    };
+
+    window.selectStockUnit = function(unit) {
+      highlightStockUnit(unit);
+      updateStockQtyPreviewFromControls();
+    };
+
+    window.onStockQtyCustomInput = function(val) {
+      document.getElementById('qtyModalCurrentPreview').textContent = val.trim() || 'Not specified';
+    };
+
+    window.openStockQtyModal = function(id) {
+      currentQtyModalIngredient = state.stockList.find(i => i.id === id);
+      if (!currentQtyModalIngredient) return;
+
+      document.getElementById('qtyModalEmoji').textContent = currentQtyModalIngredient.emoji;
+      document.getElementById('qtyModalName').textContent = currentQtyModalIngredient.name;
+      
+      const currentVal = currentQtyModalIngredient.stockQty || '';
+      document.getElementById('stockQtyInput').value = currentVal;
+      
+      const previewPill = document.getElementById('qtyModalCurrentPreview');
+      previewPill.textContent = currentVal ? currentVal : 'Not specified';
+
+      // Try parse existing "N unit" into slider + unit
+      stockQtySliderNum = 0;
+      selectedStockUnit = 'pc';
+      if (currentVal) {
+        const match = currentVal.match(/^(\d+(?:\.\d+)?)\s*([a-zA-Z]+)/);
+        if (match) {
+          const n = parseFloat(match[1]);
+          if (Number.isFinite(n) && n >= 0 && n <= 10) stockQtySliderNum = n;
+          const u = match[2].toLowerCase();
+          const known = ['pc','pcs','pack','box','bag','bottle','can','bunch','kg','g','cup'];
+          if (known.includes(u)) selectedStockUnit = u;
+        }
+      }
+      document.getElementById('stockQtySlider').value = stockQtySliderNum;
+      document.getElementById('stockQtySliderValue').textContent = String(stockQtySliderNum);
+      highlightStockUnit(selectedStockUnit);
+
+      window.openModal('stockQtyModal');
+    };
+
+    window.setStockQtyPreset = function(presetStr) {
+      document.getElementById('stockQtyInput').value = presetStr;
+      document.getElementById('qtyModalCurrentPreview').textContent = presetStr;
+    };
+
+    window.clearStockQty = function() {
+      if (!currentQtyModalIngredient) return;
+      const oldQty = currentQtyModalIngredient.stockQty;
+      currentQtyModalIngredient.stockQty = '';
+      if (oldQty) {
+        addLog("Stock Qty Cleared", `Cleared stock quantity for ${currentQtyModalIngredient.name}`);
+      }
+      window.closeModal('stockQtyModal');
+      renderPantryManager();
+      window.renderAll();
+    };
+
+    window.saveStockQty = function() {
+      if (!currentQtyModalIngredient) return;
+      const newQty = document.getElementById('stockQtyInput').value.trim();
+      const oldQty = currentQtyModalIngredient.stockQty;
+
+      currentQtyModalIngredient.stockQty = newQty;
+      addLog("Stock Qty Updated", `Updated ${currentQtyModalIngredient.name} quantity to "${newQty || 'None'}" (Was: "${oldQty || 'None'}")`);
+
+      window.closeModal('stockQtyModal');
+      renderPantryManager();
+      window.renderAll();
+    };
+
+    window.promptBulkStock = function(status) {
+      pendingBulkStatus = status;
+      pendingConfirmAction = null;
+      document.getElementById('bulkConfirmSubtitle').textContent = "Bulk Stock Status Update";
+      const msg = status 
+        ? "Are you sure you want to mark ALL pantry ingredients as IN-STOCK?" 
+        : "Are you sure you want to mark ALL pantry ingredients as OUT-OF-STOCK?";
+      
+      document.getElementById('bulkConfirmMessage').textContent = msg;
+      
+      const btn = document.getElementById('bulkConfirmBtn');
+      if (status) {
+        btn.className = "px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow transition";
+        btn.textContent = "Mark All In-Stock";
+      } else {
+        btn.className = "px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow transition";
+        btn.textContent = "Mark All Out-of-Stock";
+      }
+
+      window.openModal('bulkConfirmModal');
+    };
+
+    function promptRemoval(message, btnText, action) {
+      pendingBulkStatus = null;
+      pendingConfirmAction = action;
+      document.getElementById('bulkConfirmSubtitle').textContent = "Remove Ingredients";
+      document.getElementById('bulkConfirmMessage').textContent = message;
+      const btn = document.getElementById('bulkConfirmBtn');
+      btn.className = "px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow transition";
+      btn.textContent = btnText;
+      window.openModal('bulkConfirmModal');
+    }
+
+    window.promptRemoveIngredient = function(id) {
+      const item = state.stockList.find(i => i.id === id);
+      if (!item) return;
+      promptRemoval(`Remove ${item.emoji} ${item.name} from the pantry? This cannot be undone.`, "Remove Ingredient", () => {
+        state.stockList = state.stockList.filter(i => i.id !== id);
+        addLog("Stock Item Removed", `Removed ${item.name} (${item.category})`);
+      });
+    };
+
+    window.promptRemoveOutOfStock = function() {
+      const outItems = state.stockList.filter(i => !i.inStock);
+      if (outItems.length === 0) {
+        document.getElementById('bulkConfirmMessage').textContent = "There are no out-of-stock ingredients to remove.";
+        pendingBulkStatus = null;
+        pendingConfirmAction = null;
+        document.getElementById('bulkConfirmSubtitle').textContent = "Remove Ingredients";
+        const btn = document.getElementById('bulkConfirmBtn');
+        btn.className = "hidden";
+        window.openModal('bulkConfirmModal');
+        return;
+      }
+      promptRemoval(`Remove all ${outItems.length} out-of-stock ingredient(s) from the pantry? This cannot be undone.`, "Remove Out-of-Stock", () => {
+        state.stockList = state.stockList.filter(i => i.inStock);
+        addLog("Bulk Remove", `Removed ${outItems.length} out-of-stock item(s): ${outItems.map(i => i.name).join(', ')}`);
+      });
+    };
+
+    window.confirmBulkStockAction = function() {
+      if (pendingConfirmAction) {
+        pendingConfirmAction();
+        pendingConfirmAction = null;
+        window.closeModal('bulkConfirmModal');
+        renderPantryManager();
+        window.renderAll();
+        return;
+      }
+      if (pendingBulkStatus !== null) {
+        state.stockList.forEach(i => i.inStock = pendingBulkStatus);
+        addLog("Bulk Stock Action", `Marked all items as ${pendingBulkStatus ? 'In-Stock' : 'Out-of-Stock'}`);
+        pendingBulkStatus = null;
+        window.closeModal('bulkConfirmModal');
+        renderPantryManager();
+        window.renderAll();
+      }
+    };
+
+    window.addCustomPantryItem = function() {
+      const emoji = document.getElementById('newIngEmoji').value.trim() || '🥗';
+      const name = document.getElementById('newIngName').value.trim();
+      const category = document.getElementById('newIngCat').value;
+
+      if (name) {
+        state.stockList.push({
+          id: Date.now().toString(),
+          name,
+          emoji,
+          category,
+          inStock: true,
+          stockQty: ''
+        });
+        addLog("New Stock Item", `Added ${name} (${category})`);
+        document.getElementById('newIngName').value = '';
+        renderPantryManager();
+        window.renderAll();
+      }
+    };
+
+    function renderLogHistory() {
+      const container = document.getElementById('logHistoryContainer');
+      if (state.activityLogs.length === 0) {
+        container.innerHTML = `<div class="text-xs text-slate-400 italic text-center py-8">No activity logs recorded yet.</div>`;
+        return;
+      }
+      container.innerHTML = state.activityLogs.map(log => `
+        <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs flex items-center justify-between">
+          <div>
+            <span class="font-bold text-slate-800 mr-2">${log.action}:</span>
+            <span class="text-slate-600">${log.details}</span>
+          </div>
+          <span class="text-[10px] text-slate-400 whitespace-nowrap ml-2">${log.timestamp}</span>
+        </div>
+      `).join('');
+    }
+
+    window.clearLogs = function() {
+      state.activityLogs = [];
+      saveState();
+      renderLogHistory();
+    };
+
+    function renderPresetList() {
+      const container = document.getElementById('presetList');
+      if (state.savedPresets.length === 0) {
+        container.innerHTML = `<div class="text-xs text-slate-400 italic text-center py-4">No saved daily presets.</div>`;
+        return;
+      }
+      container.innerHTML = state.savedPresets.map((preset, idx) => `
+        <div class="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+          <div>
+            <h5 class="font-bold text-slate-800">${preset.name}</h5>
+            <span class="text-[10px] text-slate-400">${preset.date}</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <button onclick="window.applyPreset(${idx})" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg transition">
+              Apply
+            </button>
+            <button onclick="window.deletePreset(${idx})" class="text-rose-500 hover:text-rose-700 p-1 rounded-lg">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.saveCurrentPreset = function() {
+      const name = document.getElementById('presetNameInput').value.trim();
+      if (name) {
+        state.savedPresets.push({
+          name,
+          date: new Date().toLocaleDateString(),
+          meals: JSON.parse(JSON.stringify(state.meals))
+        });
+        document.getElementById('presetNameInput').value = '';
+        saveState();
+        renderPresetList();
+      }
+    };
+
+    window.applyPreset = function(idx) {
+      if (state.savedPresets[idx]) {
+        state.meals = JSON.parse(JSON.stringify(state.savedPresets[idx].meals));
+        window.renderAll();
+        window.closeModal('presetModal');
+      }
+    };
+
+    window.deletePreset = function(idx) {
+      state.savedPresets.splice(idx, 1);
+      saveState();
+      renderPresetList();
+    };
+
+    window.copyToClipboard = function() {
+      const text = document.getElementById('whatsappOutput').value;
+      const tempArea = document.createElement('textarea');
+      tempArea.value = text;
+      document.body.appendChild(tempArea);
+      tempArea.select();
+      try {
+        document.execCommand('copy');
+        const toast = document.getElementById('copyToast');
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 2500);
+      } catch (err) {
+        console.error('Copy failed', err);
+      }
+      document.body.removeChild(tempArea);
+    };
+
+    window.sendToWhatsApp = function() {
+      const text = encodeURIComponent(document.getElementById('whatsappOutput').value);
+      window.open(`https://wa.me/?text=${text}`, '_blank');
+    };
+
+    window.openModal = function(id) {
+      if (id === 'pantryModal') renderPantryManager();
+      if (id === 'historyModal') renderLogHistory();
+      if (id === 'presetModal') renderPresetList();
+      if (id === 'syncModal') {
+        document.getElementById('householdCodeInput').value = state.householdCode;
+        if (state.householdCode) {
+          document.getElementById('syncModalStatus').textContent = `Connected (${state.householdCode})`;
+          document.getElementById('syncModalStatus').className = "font-bold text-emerald-600";
+        }
+      }
+      document.getElementById(id)?.classList.remove('hidden');
+    };
+
+    window.closeModal = function(id) {
+      document.getElementById(id)?.classList.add('hidden');
+    };
+
+    window.onload = function() {
+      window.renderAll();
+      if (state.householdCode) {
+        document.getElementById('syncStatusLabel').textContent = `Sync: ${state.householdCode}`;
+      }
+    };
+  </script>
+</body>
+</html>
